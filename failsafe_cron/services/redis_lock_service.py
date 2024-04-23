@@ -1,15 +1,11 @@
-import redis
-
+from failsafe_cron.connections.connect_redis import ConnectRedis
 from failsafe_cron.repositories.info_data_repository import InfoDataRepository
-import os
-from dotenv import load_dotenv
 
 class RedisLockService:
     def __init__(self):
-        env_path = os.path.join(os.path.dirname(__file__), '..', '..', 'app.env')
-        load_dotenv(env_path)
         self.repository = InfoDataRepository()
-        self.redis_template = redis.StrictRedis(os.getenv('PYTHON_DATA_REDIS_HOST'), os.getenv('PYTHON_DATA_REDIS_PORT'), os.getenv('PYTHON_DATA_REDIS_DB'))
+        connect_redis = ConnectRedis()
+        self.redis_template = connect_redis.connect()
 
     def script(self, data):
         print("Number of models in database before script:", len(self.repository.read_all()))

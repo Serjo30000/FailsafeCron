@@ -1,19 +1,12 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from failsafe_cron.connections.connect_postgres import ConnectPostgres
 from failsafe_cron.models.info_data import InfoData, Base
-import os
-from dotenv import load_dotenv
 
 class InfoDataRepository:
     def __init__(self):
-        env_path = os.path.join(os.path.dirname(__file__), '..', '..', 'app.env')
-        load_dotenv(env_path)
-
-        db_uri = f"postgresql://{os.getenv('PYTHON_DATASOURCE_POSTGRES_USERNAME')}:{os.getenv('PYTHON_DATASOURCE_POSTGRES_PASSWORD')}@{os.getenv('PYTHON_DATASOURCE_POSTGRES_HOST')}/{os.getenv('PYTHON_DATASOURCE_POSTGRES_DB')}"
-
-        self.engine = create_engine(db_uri)
-        Base.metadata.create_all(self.engine)
-        self.Session = sessionmaker(bind=self.engine)
+        connect_postgres = ConnectPostgres()
+        connect_postgres.connect()
+        Base.metadata.create_all(connect_postgres.get_engine())
+        self.Session = connect_postgres.get_session()
 
     def create(self, data):
         session = self.Session()
